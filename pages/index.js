@@ -1,22 +1,30 @@
 import Head from "next/head";
 import { useState } from "react";
-import { QUESTIONS, NOTES } from "../data/questions";
+import { INTRO, CHAPTERS, NOTES, QUESTIONS } from "../data/questions";
 
 export default function Home() {
-  const [tab, setTab] = useState("study");
+  const [tab, setTab] = useState("intro");
+  const [selectedChapter, setSelectedChapter] = useState(null);
+
+  function goToChapterNotes(n) {
+    setSelectedChapter(n);
+    setTab("notes");
+  }
 
   return (
     <div className="wrap">
       <Head>
-        <title>IFoA Prep — Notes & Mock Exams</title>
+        <title>CS1 Prep — IFoA Actuarial Statistics</title>
       </Head>
-      <h1>IFoA Prep</h1>
-      <div className="tag">Free question bank and notes for IFoA exam students.</div>
+      <h1>{INTRO.title}</h1>
+      <div className="tag">A free, chapter-by-chapter CS1 study companion.</div>
 
       <div className="tabs">
         {[
-          ["study", "Study"],
+          ["intro", "Introduction"],
+          ["chapters", "Chapters"],
           ["notes", "Notes"],
+          ["practice", "Practice"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -28,13 +36,74 @@ export default function Home() {
         ))}
       </div>
 
-      {tab === "study" && <StudyTab />}
-      {tab === "notes" && <NotesTab />}
+      {tab === "intro" && <IntroTab />}
+      {tab === "chapters" && <ChaptersTab onSelect={goToChapterNotes} />}
+      {tab === "notes" && (
+        <NotesTab selectedChapter={selectedChapter} setSelectedChapter={setSelectedChapter} />
+      )}
+      {tab === "practice" && <PracticeTab />}
     </div>
   );
 }
 
-function StudyTab() {
+function IntroTab() {
+  return (
+    <div className="panel">
+      <p style={{ fontSize: "0.95rem", lineHeight: 1.7 }}>{INTRO.body}</p>
+    </div>
+  );
+}
+
+function ChaptersTab({ onSelect }) {
+  return (
+    <div className="panel">
+      <div style={{ fontWeight: 700, marginBottom: 12 }}>CS1 — full chapter list</div>
+      {CHAPTERS.map((c) => (
+        <div
+          key={c.n}
+          className="note-topic"
+          style={{ cursor: "pointer", borderBottom: "1px solid var(--border)", paddingBottom: 10 }}
+          onClick={() => onSelect(c.n)}
+        >
+          <h3 style={{ margin: 0 }}>
+            {c.n}. {c.title}
+          </h3>
+        </div>
+      ))}
+      <div style={{ fontSize: "0.78rem", color: "var(--text-dim)", marginTop: 12 }}>
+        Click any chapter to jump straight to its notes.
+      </div>
+    </div>
+  );
+}
+
+function NotesTab({ selectedChapter, setSelectedChapter }) {
+  const chapterNum = selectedChapter || 1;
+  const note = NOTES[chapterNum];
+  return (
+    <div className="panel">
+      <select
+        value={chapterNum}
+        onChange={(e) => setSelectedChapter(Number(e.target.value))}
+        style={{ marginBottom: 16 }}
+      >
+        {CHAPTERS.map((c) => (
+          <option key={c.n} value={c.n}>
+            {c.n}. {c.title}
+          </option>
+        ))}
+      </select>
+      <div className="note-topic">
+        <h3>
+          {chapterNum}. {note.title}
+        </h3>
+        <p>{note.body}</p>
+      </div>
+    </div>
+  );
+}
+
+function PracticeTab() {
   const [idx, setIdx] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [chosen, setChosen] = useState(null);
@@ -53,10 +122,11 @@ function StudyTab() {
 
   return (
     <div className="panel">
-      <span className="q-topic">
-        {q.subject} · {q.topic}
-      </span>
-      <p style={{ fontSize: "1rem", lineHeight: 1.5 }}>{q.text}</p>
+      <span className="q-topic">{q.topic}</span>
+      <div style={{ fontSize: "0.75rem", color: "var(--text-dim)", marginTop: 6 }}>
+        Question {idx + 1} of {QUESTIONS.length}
+      </div>
+      <p style={{ fontSize: "1rem", lineHeight: 1.5, marginTop: 10 }}>{q.text}</p>
       {q.options.map((o, i) => {
         let cls = "opt";
         if (answered && i === q.correct) cls += " correct";
@@ -73,28 +143,6 @@ function StudyTab() {
           Next question
         </button>
       )}
-    </div>
-  );
-}
-
-function NotesTab() {
-  const subjects = Object.keys(NOTES);
-  const [subject, setSubject] = useState(subjects[0]);
-  return (
-    <div className="panel">
-      <select value={subject} onChange={(e) => setSubject(e.target.value)} style={{ marginBottom: 16 }}>
-        {subjects.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-      {NOTES[subject].map((n, i) => (
-        <div className="note-topic" key={i}>
-          <h3>{n.topic}</h3>
-          <p>{n.body}</p>
-        </div>
-      ))}
     </div>
   );
 }
