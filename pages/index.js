@@ -3,8 +3,8 @@ import { useState } from "react";
 import { INTRO, CHAPTERS, NOTES, QUESTIONS } from "../data/questions";
 
 export default function Home() {
-  const [tab, setTab] = useState("intro");
-  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [tab, setTab] = useState("chapters");
+  const [selectedChapter, setSelectedChapter] = useState(1);
 
   function goToChapterNotes(n) {
     setSelectedChapter(n);
@@ -16,12 +16,38 @@ export default function Home() {
       <Head>
         <title>CS1 Prep — IFoA Actuarial Statistics</title>
       </Head>
-      <h1>{INTRO.title}</h1>
-      <div className="tag">A free, chapter-by-chapter CS1 study companion.</div>
+
+      <div className="hero">
+        <div className="hero-inner">
+          <div className="eyebrow">IFoA · CS1 · Actuarial Statistics</div>
+          <h1>
+            Make sense of <span className="accent-word">uncertainty</span>,<br />
+            one chapter at a time
+          </h1>
+          <p>{INTRO.body}</p>
+          <div className="stat-row">
+            <div className="stat">
+              <div className="num">{CHAPTERS.length}</div>
+              <div className="label">Chapters</div>
+            </div>
+            <div className="stat">
+              <div className="num">{QUESTIONS.length}</div>
+              <div className="label">Practice questions</div>
+            </div>
+          </div>
+          <button className="cta" onClick={() => goToChapterNotes(1)}>
+            Start with Chapter 1
+          </button>
+        </div>
+        <div className="histogram">
+          {[30, 55, 85, 100, 70, 40, 20].map((h, i) => (
+            <div key={i} className="bar" style={{ height: h + "%" }} />
+          ))}
+        </div>
+      </div>
 
       <div className="tabs">
         {[
-          ["intro", "Introduction"],
           ["chapters", "Chapters"],
           ["notes", "Notes"],
           ["practice", "Practice"],
@@ -36,43 +62,29 @@ export default function Home() {
         ))}
       </div>
 
-      {tab === "intro" && <IntroTab />}
       {tab === "chapters" && <ChaptersTab onSelect={goToChapterNotes} />}
       {tab === "notes" && (
         <NotesTab selectedChapter={selectedChapter} setSelectedChapter={setSelectedChapter} />
       )}
       {tab === "practice" && <PracticeTab />}
-    </div>
-  );
-}
 
-function IntroTab() {
-  return (
-    <div className="panel">
-      <p style={{ fontSize: "0.95rem", lineHeight: 1.7 }}>{INTRO.body}</p>
+      <footer>
+        <span>CS1 Prep — built for IFoA students</span>
+        <span>Not affiliated with the Institute and Faculty of Actuaries</span>
+      </footer>
     </div>
   );
 }
 
 function ChaptersTab({ onSelect }) {
   return (
-    <div className="panel">
-      <div style={{ fontWeight: 700, marginBottom: 12 }}>CS1 — full chapter list</div>
+    <div>
       {CHAPTERS.map((c) => (
-        <div
-          key={c.n}
-          className="note-topic"
-          style={{ cursor: "pointer", borderBottom: "1px solid var(--border)", paddingBottom: 10 }}
-          onClick={() => onSelect(c.n)}
-        >
-          <h3 style={{ margin: 0 }}>
-            {c.n}. {c.title}
-          </h3>
+        <div key={c.n} className="toc-entry" onClick={() => onSelect(c.n)}>
+          <span className="toc-num">{c.n < 10 ? "0" + c.n : c.n}</span>
+          <span className="toc-title">{c.title}</span>
         </div>
       ))}
-      <div style={{ fontSize: "0.78rem", color: "var(--text-dim)", marginTop: 12 }}>
-        Click any chapter to jump straight to its notes.
-      </div>
     </div>
   );
 }
@@ -81,11 +93,11 @@ function NotesTab({ selectedChapter, setSelectedChapter }) {
   const chapterNum = selectedChapter || 1;
   const note = NOTES[chapterNum];
   return (
-    <div className="panel">
+    <div className="page">
       <select
+        className="page-select"
         value={chapterNum}
         onChange={(e) => setSelectedChapter(Number(e.target.value))}
-        style={{ marginBottom: 16 }}
       >
         {CHAPTERS.map((c) => (
           <option key={c.n} value={c.n}>
@@ -93,12 +105,10 @@ function NotesTab({ selectedChapter, setSelectedChapter }) {
           </option>
         ))}
       </select>
-      <div className="note-topic">
-        <h3>
-          {chapterNum}. {note.title}
-        </h3>
-        <p>{note.body}</p>
-      </div>
+      <h2>
+        {chapterNum}. {note.title}
+      </h2>
+      <p>{note.body}</p>
     </div>
   );
 }
@@ -121,12 +131,12 @@ function PracticeTab() {
   }
 
   return (
-    <div className="panel">
+    <div className="q-card">
+      <span className="q-progress">
+        {idx + 1} / {QUESTIONS.length}
+      </span>
       <span className="q-topic">{q.topic}</span>
-      <div style={{ fontSize: "0.75rem", color: "var(--text-dim)", marginTop: 6 }}>
-        Question {idx + 1} of {QUESTIONS.length}
-      </div>
-      <p style={{ fontSize: "1rem", lineHeight: 1.5, marginTop: 10 }}>{q.text}</p>
+      <p className="q-text">{q.text}</p>
       {q.options.map((o, i) => {
         let cls = "opt";
         if (answered && i === q.correct) cls += " correct";
@@ -139,7 +149,7 @@ function PracticeTab() {
       })}
       {answered && <div className="explain">{q.explain}</div>}
       {answered && (
-        <button className="btn" style={{ marginTop: 14 }} onClick={next}>
+        <button className="cta" style={{ marginTop: 14 }} onClick={next}>
           Next question
         </button>
       )}
