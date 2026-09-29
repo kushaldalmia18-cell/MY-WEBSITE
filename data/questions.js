@@ -5,16 +5,21 @@ export const INTRO = {
 
 export const CHAPTERS = [
   { n: 1, title: "Data analysis" },
-  { n: 2, title: "Probability" },
-  { n: 3, title: "Random variables" },
-  { n: 4, title: "Generating functions & the Central Limit Theorem" },
-  { n: 5, title: "Joint distributions" },
-  { n: 6, title: "Estimation" },
-  { n: 7, title: "Confidence intervals" },
-  { n: 8, title: "Hypothesis testing" },
-  { n: 9, title: "Correlation & regression" },
-  { n: 10, title: "Analysis of variance (ANOVA)" },
-  { n: 11, title: "Bayesian statistics" },
+  { n: 2, title: "Random variables and distributions" },
+  { n: 3, title: "Generating functions" },
+  { n: 4, title: "Joint distributions and dependence" },
+  { n: 5, title: "Expectations and conditional expectations" },
+  { n: 6, title: "The Central Limit Theorem" },
+  { n: 7, title: "Random sampling and sampling distributions" },
+  { n: 8, title: "Estimation and estimators" },
+  { n: 9, title: "Confidence intervals and prediction intervals" },
+  { n: 10, title: "Hypothesis testing and goodness of fit" },
+  { n: 11, title: "Exploratory data analysis (correlation & PCA)" },
+  { n: 12, title: "Linear regression" },
+  { n: 13, title: "Generalised linear models" },
+  { n: 14, title: "Bayesian statistics I: Bayes' theorem and estimation" },
+  { n: 15, title: "Bayesian statistics II: credible intervals and loss functions" },
+  { n: 16, title: "Bayesian statistics III: credibility theory" },
 ];
 
 export const NOTES = {
