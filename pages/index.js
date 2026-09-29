@@ -108,7 +108,7 @@ function NotesTab({ selectedChapter, setSelectedChapter }) {
       <h2>
         {chapterNum}. {note.title}
       </h2>
-      <p>{note.body}</p>
+      <div dangerouslySetInnerHTML={{ __html: note.body }} />
     </div>
   );
 }
