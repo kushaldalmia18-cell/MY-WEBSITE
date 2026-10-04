@@ -118,6 +118,14 @@ export default function Home() {
       router.push('/chapter-notes');
       return;
     }
+    if (dest === 'CV Templates') {
+      router.push('/cv-templates');
+      return;
+    }
+    if (dest === 'Coding Practice') {
+      router.push('/coding-practice');
+      return;
+    }
     showToast('→ Would open: ' + dest);
   }
 
