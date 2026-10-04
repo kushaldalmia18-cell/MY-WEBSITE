@@ -114,6 +114,10 @@ export default function Home() {
       router.push('/interview-prep');
       return;
     }
+    if (dest === 'Browse Papers') {
+      router.push('/chapter-notes');
+      return;
+    }
     showToast('→ Would open: ' + dest);
   }
 
