@@ -24,6 +24,39 @@ const FALLBACK_JOBS = [
   { tag: 'Browse', categories: ['Browse'], href: 'https://www.linkedin.com/jobs/search/?keywords=actuarial', title: 'Search "actuarial" on LinkedIn Jobs', body: 'LinkedIn’s job search filtered to actuarial roles, useful for seeing who in your network is connected to the employer.', date: null }
 ];
 
+// Shown as a supplement whenever the "Entry level" filter has zero matches
+// (the live feed skews toward qualified/experienced hires some days) — real
+// search URLs filtered toward graduate schemes specifically, not a vague
+// "try again later".
+const GRAD_SEARCH_LINKS = [
+  { title: 'Search "actuarial graduate scheme" on Indeed UK', href: 'https://uk.indeed.com/jobs?q=actuarial+graduate+scheme' },
+  { title: 'Search graduate roles on TheActuaryJobs.com', href: 'https://www.theactuaryjobs.com/jobs/graduate/' },
+  { title: 'Search "actuarial graduate" on LinkedIn Jobs', href: 'https://www.linkedin.com/jobs/search/?keywords=actuarial%20graduate' }
+];
+
+// No structured "experience level" field exists in the feed, so this is a
+// best-effort keyword read of the title + description — not a guarantee.
+// A senior-role signal always wins over a weaker entry-level one (e.g. a
+// posting that mentions "graduate scheme" it ran years ago inside a senior
+// manager's bio would still get excluded).
+const ENTRY_LEVEL_KEYWORDS = [
+  'graduate', 'trainee', 'entry level', 'entry-level', 'junior',
+  'intern', 'internship', 'placement', 'school leaver', 'apprentice',
+  'apprenticeship', 'part qualified', 'part-qualified', 'actuarial analyst',
+  'student actuary', 'undergraduate'
+];
+const SENIOR_EXCLUDE_KEYWORDS = [
+  'senior', 'head of', 'director', 'chief', 'principal', 'lead actuary',
+  'manager', 'managing', 'partner', 'vice president', 'president',
+  'committee member', 'cro,', 'cfo,', 'cro -', 'cfo -'
+];
+
+function isEntryLevel(job) {
+  const text = (job.title + ' ' + job.body).toLowerCase();
+  if (SENIOR_EXCLUDE_KEYWORDS.some((kw) => text.includes(kw))) return false;
+  return ENTRY_LEVEL_KEYWORDS.some((kw) => text.includes(kw));
+}
+
 function parseJobBlock(block) {
   const title = decodeEntitiesFully(extractTag(block, 'title'));
   const link = extractTag(block, 'link');
@@ -77,8 +110,17 @@ export async function getStaticProps() {
 export default function JobListings({ jobs, isLive }) {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [levelFilter, setLevelFilter] = useState('entry'); // 'entry' | 'all'
 
-  const jobList = jobs && jobs.length > 0 ? jobs : FALLBACK_JOBS;
+  const rawJobList = jobs && jobs.length > 0 ? jobs : FALLBACK_JOBS;
+
+  // Browse-link fallback cards (both the total-outage FALLBACK_JOBS and the
+  // GRAD_SEARCH_LINKS shown below) aren't real postings, so the entry-level
+  // keyword read doesn't apply to them — treat them as always matching.
+  const jobList = useMemo(
+    () => rawJobList.map((job) => ({ ...job, _entry: job.tag === 'Browse' ? true : isEntryLevel(job) })),
+    [rawJobList]
+  );
 
   const categories = useMemo(() => {
     const set = new Set();
@@ -91,9 +133,12 @@ export default function JobListings({ jobs, isLive }) {
     return jobList.filter((job) => {
       const matchesQuery = !q || job.title.toLowerCase().includes(q) || job.body.toLowerCase().includes(q);
       const matchesCategory = activeCategory === 'All' || (job.categories || [job.tag]).includes(activeCategory);
-      return matchesQuery && matchesCategory;
+      const matchesLevel = levelFilter === 'all' || job._entry;
+      return matchesQuery && matchesCategory && matchesLevel;
     });
-  }, [jobList, query, activeCategory]);
+  }, [jobList, query, activeCategory, levelFilter]);
+
+  const noEntryLevelMatches = isLive && levelFilter === 'entry' && filtered.length === 0;
 
   return (
     <>
@@ -113,7 +158,7 @@ export default function JobListings({ jobs, isLive }) {
           <h1>Actuarial roles, <span className="jl-hero-accent">in one place</span>.</h1>
           <p className="ag-sub">
             {isLive
-              ? 'Live listings pulled automatically from UK actuarial job boards, refreshed roughly once a day.'
+              ? 'Live listings pulled automatically from UK actuarial job boards, refreshed roughly once a day. Showing entry-level and graduate roles by default.'
               : 'Live listings are temporarily unavailable, so here are direct links to search actuarial roles yourself.'}
           </p>
         </div>
@@ -126,6 +171,20 @@ export default function JobListings({ jobs, isLive }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <div className="jl-levelbar">
+            <button
+              className={'jl-levelbtn' + (levelFilter === 'entry' ? ' active' : '')}
+              onClick={() => setLevelFilter('entry')}
+            >
+              Entry level / graduate
+            </button>
+            <button
+              className={'jl-levelbtn' + (levelFilter === 'all' ? ' active' : '')}
+              onClick={() => setLevelFilter('all')}
+            >
+              All levels
+            </button>
+          </div>
           <div className="jl-catbar">
             {categories.map((cat) => (
               <button
@@ -139,7 +198,7 @@ export default function JobListings({ jobs, isLive }) {
           </div>
         </div>
 
-        <p className="jl-count">{filtered.length} role{filtered.length === 1 ? '' : 's'}{query || activeCategory !== 'All' ? ' matching your filters' : ''}</p>
+        <p className="jl-count">{filtered.length} role{filtered.length === 1 ? '' : 's'}{query || activeCategory !== 'All' || levelFilter === 'entry' ? ' matching your filters' : ''}</p>
 
         <div className="jl-grid">
           {filtered.map((job) => (
@@ -159,14 +218,32 @@ export default function JobListings({ jobs, isLive }) {
               <span className="jl-view">View &amp; apply →</span>
             </a>
           ))}
-          {filtered.length === 0 && (
+          {filtered.length === 0 && !noEntryLevelMatches && (
             <div className="jl-empty">No roles match that search. Try a different keyword or category.</div>
           )}
         </div>
 
+        {noEntryLevelMatches && (
+          <div className="jl-gradfallback">
+            <p className="jl-gradfallback-title">No entry-level roles in the live feed right now — it skews toward qualified hires some days.</p>
+            <div className="jl-grid">
+              {GRAD_SEARCH_LINKS.map((link) => (
+                <a className="jl-card jl-card-search" href={link.href} target="_blank" rel="noopener noreferrer" key={link.href}>
+                  <span className="jl-tag">Browse</span>
+                  <h3>{link.title}</h3>
+                  <span className="jl-view">Search →</span>
+                </a>
+              ))}
+            </div>
+            <button className="jl-levelbtn" style={{ marginTop: 16 }} onClick={() => setLevelFilter('all')}>
+              Or see all {jobList.length} live roles →
+            </button>
+          </div>
+        )}
+
         <p className="jl-note">
           {isLive
-            ? 'Listings link out to the original job board — applications happen there, not on this site. Pulled automatically and refreshed roughly once a day.'
+            ? '"Entry level / graduate" is a best-effort keyword match on each posting’s title and description (graduate, trainee, junior, intern, part-qualified, etc.) — it won’t be perfect, so switch to "All levels" if you want to see everything. Listings link out to the original job board; applications happen there, not on this site.'
             : 'These are search links to job boards, not specific postings — click through to see current openings.'}
         </p>
       </div>
@@ -206,6 +283,15 @@ export default function JobListings({ jobs, isLive }) {
         .jl-catbar{display:flex; gap:8px; flex-wrap:wrap;}
         .jl-catbtn{border:1.5px solid var(--ag-line); background:var(--ag-surface); color:var(--ag-ink); font-family:var(--ag-font-body); font-weight:600; font-size:12.5px; padding:8px 16px; border-radius:30px; cursor:pointer;}
         .jl-catbtn.active{background:var(--ag-accent); border-color:var(--ag-accent); color:#fff;}
+
+        .jl-levelbar{display:flex; gap:8px; flex-wrap:wrap;}
+        .jl-levelbtn{border:1.5px solid var(--ag-gold); background:var(--ag-surface); color:var(--ag-ink); font-family:var(--ag-font-mono); font-weight:600; font-size:12px; padding:9px 16px; border-radius:30px; cursor:pointer;}
+        .jl-levelbtn.active{background:var(--ag-gold); border-color:var(--ag-gold); color:#fff;}
+
+        .jl-gradfallback{margin-top:10px; padding:24px; border:1.5px dashed var(--ag-line); border-radius:16px; text-align:center;}
+        .jl-gradfallback-title{font-size:13.5px; margin-bottom:18px;}
+        .jl-gradfallback .jl-grid{margin-top:0;}
+        .jl-card-search{align-items:flex-start;}
 
         .jl-count{margin-top:22px; font-family:var(--ag-font-mono); font-size:12px;}
 
