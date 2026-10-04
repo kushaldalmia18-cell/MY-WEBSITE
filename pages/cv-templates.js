@@ -98,87 +98,89 @@ export default function CVTemplates() {
           <div className="cv-legend-item"><span className="cv-legend-dot cv-legend-tech"></span>Technical skills and tools</div>
         </div>
 
-        <div className="cv-group" style={{ marginTop: 40 }}>
-          <div className="cv-group-title">A worked example — graduate CV</div>
+        {(activeTab === 'grad' || activeTab === 'exp') && (
+          <div className="cv-group" style={{ marginTop: 40 }}>
+            <div className="cv-group-title">A worked example — graduate CV</div>
 
-          <div className="cv-annotated-wrap">
-            <div className="cv-annot cv-annot-left" style={{ gridRow: 2, gridColumn: 1 }}>
-              <span className="cv-annot-text">Education</span><span className="cv-annot-arrow">→</span>
-            </div>
-            <div className="cv-annot cv-annot-left" style={{ gridRow: 4, gridColumn: 1 }}>
-              <span className="cv-annot-text">Projects</span><span className="cv-annot-arrow">→</span>
-            </div>
-
-            <div className="cv-ex-section-row cv-ex-row-first" style={{ gridRow: 1, gridColumn: 2 }}>
-              <div className="cv-ex-header">
-                <h2>Name Surname</h2>
-                <p className="cv-ex-contact">+44 7XXX XXXXXX &nbsp;|&nbsp; namesurname@email.com &nbsp;|&nbsp; linkedin.com/in/namesurname &nbsp;|&nbsp; London, UK</p>
+            <div className="cv-annotated-wrap">
+              <div className="cv-annot cv-annot-left" style={{ gridRow: 2, gridColumn: 1 }}>
+                <span className="cv-annot-text">Education</span><span className="cv-annot-arrow">→</span>
               </div>
-            </div>
-
-            <div className="cv-ex-section-row" style={{ gridRow: 2, gridColumn: 2 }}>
-              <h3>Education</h3>
-              <div className="cv-ex-row">
-                <div><strong>University of Nottingham</strong><br /><em><Hi c="edu">MSc Actuarial Science, Distinction</Hi></em></div>
-                <span className="cv-ex-date">Sep 2024 – Sep 2025</span>
+              <div className="cv-annot cv-annot-left" style={{ gridRow: 4, gridColumn: 1 }}>
+                <span className="cv-annot-text">Projects</span><span className="cv-annot-arrow">→</span>
               </div>
-              <div className="cv-ex-row" style={{ marginTop: 10 }}>
-                <div><strong>Institute and Faculty of Actuaries</strong><br /><em><Hi c="edu">CS1, CM1, CB1, CB2 passed · CP1, CP2, CP3, SP7, SP8 exempt</Hi></em></div>
+
+              <div className="cv-ex-section-row cv-ex-row-first" style={{ gridRow: 1, gridColumn: 2 }}>
+                <div className="cv-ex-header">
+                  <h2>Name Surname</h2>
+                  <p className="cv-ex-contact">+44 7XXX XXXXXX &nbsp;|&nbsp; namesurname@email.com &nbsp;|&nbsp; linkedin.com/in/namesurname &nbsp;|&nbsp; London, UK</p>
+                </div>
               </div>
-              <p className="cv-ex-line" style={{ marginTop: 10 }}>Coursework: <Hi c="tech">Statistical Modelling (R)</Hi>, Financial Mathematics, Survival Models</p>
-            </div>
 
-            <div className="cv-annot cv-annot-right" style={{ gridRow: 1, gridColumn: 3 }}>
-              <span className="cv-annot-arrow">←</span><span className="cv-annot-text">Personal info</span>
-            </div>
-            <div className="cv-annot cv-annot-right" style={{ gridRow: 3, gridColumn: 3 }}>
-              <span className="cv-annot-arrow">←</span><span className="cv-annot-text">Experience</span>
-            </div>
-            <div className="cv-annot cv-annot-right" style={{ gridRow: 5, gridColumn: 3 }}>
-              <span className="cv-annot-arrow">←</span><span className="cv-annot-text">Skills &amp; certifications</span>
-            </div>
-
-            <div className="cv-ex-section-row" style={{ gridRow: 3, gridColumn: 2 }}>
-              <h3>Experience</h3>
-              <div className="cv-ex-row">
-                <div><strong>Aviva</strong> — Pricing Actuarial Intern</div>
-                <span className="cv-ex-date">Jun 2025 – Aug 2025 · London</span>
+              <div className="cv-ex-section-row" style={{ gridRow: 2, gridColumn: 2 }}>
+                <h3>Education</h3>
+                <div className="cv-ex-row">
+                  <div><strong>University of Nottingham</strong><br /><em><Hi c="edu">MSc Actuarial Science, Distinction</Hi></em></div>
+                  <span className="cv-ex-date">Sep 2024 – Sep 2025</span>
+                </div>
+                <div className="cv-ex-row" style={{ marginTop: 10 }}>
+                  <div><strong>Institute and Faculty of Actuaries</strong><br /><em><Hi c="edu">CS1, CM1, CB1, CB2 passed · CP1, CP2, CP3, SP7, SP8 exempt</Hi></em></div>
+                </div>
+                <p className="cv-ex-line" style={{ marginTop: 10 }}>Coursework: <Hi c="tech">Statistical Modelling (R)</Hi>, Financial Mathematics, Survival Models</p>
               </div>
-              <ul>
-                <li><Hi c="verb">Built</Hi> a <Hi c="tech">GLM pricing model in R</Hi> across 3 product lines, cutting manual rating adjustments by <Hi c="metric">25%</Hi></li>
-                <li><Hi c="verb">Automated</Hi> a monthly reserving reconciliation in <Hi c="tech">Excel/VBA</Hi>, saving the team roughly <Hi c="metric">6 hours a week</Hi></li>
-                <li><Hi c="verb">Presented</Hi> loss-ratio findings to the senior pricing team, informing a Q3 rate change recommendation</li>
-              </ul>
-              <div className="cv-ex-row" style={{ marginTop: 14 }}>
-                <div><strong>Kent Actuarial Society</strong> — Corporate Relations Officer</div>
-                <span className="cv-ex-date">Sep 2024 – present</span>
+
+              <div className="cv-annot cv-annot-right" style={{ gridRow: 1, gridColumn: 3 }}>
+                <span className="cv-annot-arrow">←</span><span className="cv-annot-text">Personal info</span>
               </div>
-              <ul>
-                <li><Hi c="verb">Secured</Hi> 4 new employer partnerships for society events, raising attendance by <Hi c="metric">40%</Hi></li>
-                <li><Hi c="verb">Coordinated</Hi> speaker visits from 3 UK insurers, each with <Hi c="metric">80+</Hi> student attendees</li>
-              </ul>
-            </div>
+              <div className="cv-annot cv-annot-right" style={{ gridRow: 3, gridColumn: 3 }}>
+                <span className="cv-annot-arrow">←</span><span className="cv-annot-text">Experience</span>
+              </div>
+              <div className="cv-annot cv-annot-right" style={{ gridRow: 5, gridColumn: 3 }}>
+                <span className="cv-annot-arrow">←</span><span className="cv-annot-text">Skills &amp; certifications</span>
+              </div>
 
-            <div className="cv-ex-section-row" style={{ gridRow: 4, gridColumn: 2 }}>
-              <h3>Projects</h3>
-              <p className="cv-ex-line"><strong>Telematics Pricing Model</strong> (MSc dissertation) — <Hi c="tech">R, GLM</Hi></p>
-              <ul>
-                <li><Hi c="verb">Modelled</Hi> usage-based motor insurance pricing on <Hi c="metric">50,000+</Hi> simulated policies, validated against a held-out test set</li>
-              </ul>
-              <p className="cv-ex-line" style={{ marginTop: 10 }}><strong>Solvency Review of a Life Assurance Company</strong> — <Hi c="tech">Excel, cash-flow modelling</Hi></p>
-              <ul>
-                <li><Hi c="verb">Built</Hi> a <Hi c="metric">20-year</Hi> cash-flow projection to assess capital adequacy under two investment strategies</li>
-              </ul>
-            </div>
+              <div className="cv-ex-section-row" style={{ gridRow: 3, gridColumn: 2 }}>
+                <h3>Experience</h3>
+                <div className="cv-ex-row">
+                  <div><strong>Aviva</strong> — Pricing Actuarial Intern</div>
+                  <span className="cv-ex-date">Jun 2025 – Aug 2025 · London</span>
+                </div>
+                <ul>
+                  <li><Hi c="verb">Built</Hi> a <Hi c="tech">GLM pricing model in R</Hi> across 3 product lines, cutting manual rating adjustments by <Hi c="metric">25%</Hi></li>
+                  <li><Hi c="verb">Automated</Hi> a monthly reserving reconciliation in <Hi c="tech">Excel/VBA</Hi>, saving the team roughly <Hi c="metric">6 hours a week</Hi></li>
+                  <li><Hi c="verb">Presented</Hi> loss-ratio findings to the senior pricing team, informing a Q3 rate change recommendation</li>
+                </ul>
+                <div className="cv-ex-row" style={{ marginTop: 14 }}>
+                  <div><strong>Kent Actuarial Society</strong> — Corporate Relations Officer</div>
+                  <span className="cv-ex-date">Sep 2024 – present</span>
+                </div>
+                <ul>
+                  <li><Hi c="verb">Secured</Hi> 4 new employer partnerships for society events, raising attendance by <Hi c="metric">40%</Hi></li>
+                  <li><Hi c="verb">Coordinated</Hi> speaker visits from 3 UK insurers, each with <Hi c="metric">80+</Hi> student attendees</li>
+                </ul>
+              </div>
 
-            <div className="cv-ex-section-row cv-ex-row-last" style={{ gridRow: 5, gridColumn: 2 }}>
-              <h3>Skills &amp; Certifications</h3>
-              <p className="cv-ex-line"><strong>Technical:</strong> <Hi c="tech">R, Python, SQL, Excel (incl. VBA), Power BI</Hi></p>
-              <p className="cv-ex-line" style={{ marginTop: 8 }}><strong>Exams:</strong> <Hi c="edu">CS1, CM1, CB1, CB2 passed · CP1, CP2, CP3, SP7, SP8 exempt</Hi></p>
-              <p className="cv-ex-line" style={{ marginTop: 8 }}><strong>Right to work:</strong> Full right to work in the UK, no sponsorship required</p>
+              <div className="cv-ex-section-row" style={{ gridRow: 4, gridColumn: 2 }}>
+                <h3>Projects</h3>
+                <p className="cv-ex-line"><strong>Telematics Pricing Model</strong> (MSc dissertation) — <Hi c="tech">R, GLM</Hi></p>
+                <ul>
+                  <li><Hi c="verb">Modelled</Hi> usage-based motor insurance pricing on <Hi c="metric">50,000+</Hi> simulated policies, validated against a held-out test set</li>
+                </ul>
+                <p className="cv-ex-line" style={{ marginTop: 10 }}><strong>Solvency Review of a Life Assurance Company</strong> — <Hi c="tech">Excel, cash-flow modelling</Hi></p>
+                <ul>
+                  <li><Hi c="verb">Built</Hi> a <Hi c="metric">20-year</Hi> cash-flow projection to assess capital adequacy under two investment strategies</li>
+                </ul>
+              </div>
+
+              <div className="cv-ex-section-row cv-ex-row-last" style={{ gridRow: 5, gridColumn: 2 }}>
+                <h3>Skills &amp; Certifications</h3>
+                <p className="cv-ex-line"><strong>Technical:</strong> <Hi c="tech">R, Python, SQL, Excel (incl. VBA), Power BI</Hi></p>
+                <p className="cv-ex-line" style={{ marginTop: 8 }}><strong>Exams:</strong> <Hi c="edu">CS1, CM1, CB1, CB2 passed · CP1, CP2, CP3, SP7, SP8 exempt</Hi></p>
+                <p className="cv-ex-line" style={{ marginTop: 8 }}><strong>Right to work:</strong> Full right to work in the UK, no sponsorship required</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="cv-group" id="cv-template-tabs" style={{ marginTop: 56 }}>
           <div className="cv-group-title">Build your own</div>
