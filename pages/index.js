@@ -49,6 +49,7 @@ const TABS = [
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('actuary');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [pathOpen, setPathOpen] = useState(false);
   const [activeBranch, setActiveBranch] = useState(null);
@@ -128,7 +129,46 @@ export default function Home() {
 
       <div className="topbar">
         <div className="logo">Actuarial<span>Guide</span></div>
-        <button className="burger" aria-label="menu"><span></span><span></span><span></span></button>
+        <div className="menu-wrap">
+          <button className="burger" aria-label="menu" onClick={() => setMenuOpen((o) => !o)}>
+            <span></span><span></span><span></span>
+          </button>
+          {menuOpen && (
+            <>
+              <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>
+              <div className="menu-panel">
+                <div className="menu-section-title">Browse</div>
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    className="menu-item"
+                    onClick={() => { setActiveTab(tab.key); setMenuOpen(false); }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+                <div className="menu-divider"></div>
+                <div className="menu-section-title">What we offer</div>
+                {PROVIDE_CARDS.map((card) => (
+                  <button
+                    key={card.dest}
+                    className="menu-item"
+                    onClick={() => { setMenuOpen(false); handleProvideClick(card.dest); }}
+                  >
+                    {card.title}
+                  </button>
+                ))}
+                <div className="menu-divider"></div>
+                <button
+                  className="menu-item"
+                  onClick={() => { setMenuOpen(false); setPathOpen(true); }}
+                >
+                  New here? See the actuarial path
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="hero">
@@ -348,11 +388,12 @@ export default function Home() {
           color-scheme:light;
         }
         *{box-sizing:border-box;}
+        html{background-color:var(--bg) !important;}
         body{
-          background-color:var(--bg);
-          color:var(--ink); font-family:var(--font-body); margin:0; padding-inline:16px;
+          background-color:var(--bg) !important;
+          color:var(--ink) !important; font-family:var(--font-body); margin:0; padding-inline:16px;
         }
-        h1,h2,h3{font-family:var(--font-display); font-style:italic; font-weight:500; text-wrap:balance; margin:0;}
+        h1,h2,h3{font-family:var(--font-display); font-style:italic; font-weight:500; text-wrap:balance; margin:0; color:var(--ink) !important;}
         p{line-height:1.55; color:var(--muted); margin:0;}
         .wrap{max-width:1080px; margin:0 auto;}
         .mono{font-family:var(--font-mono); font-style:normal;}
@@ -362,6 +403,13 @@ export default function Home() {
         .logo span{color:var(--accent);}
         .burger{width:38px; height:38px; border-radius:50%; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; gap:4px; flex-direction:column; cursor:pointer;}
         .burger span{display:block; width:14px; height:2px; background:var(--ink);}
+        .menu-wrap{position:relative;}
+        .menu-overlay{position:fixed; inset:0; background:transparent; z-index:55;}
+        .menu-panel{position:absolute; top:48px; right:0; width:240px; background:var(--surface); border:1.5px solid var(--accent); border-radius:16px; padding:10px; box-shadow:0 14px 34px rgba(0,0,0,.14); z-index:56; display:flex; flex-direction:column;}
+        .menu-section-title{font-family:var(--font-mono); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); padding:8px 8px 4px;}
+        .menu-item{display:block; width:100%; text-align:left; background:transparent; border:none; padding:9px 8px; border-radius:9px; font-family:var(--font-body); font-size:13.5px; font-weight:500; color:var(--ink); cursor:pointer;}
+        .menu-item:hover{background:var(--bg);}
+        .menu-divider{height:1px; background:var(--line); margin:6px 4px;}
 
         .hero{max-width:1080px; margin:0 auto; padding-block:28px 48px; text-align:center;}
         .eyebrow{display:inline-flex; align-items:center; gap:7px; background:var(--ink); color:#fff; font-family:var(--font-mono); font-weight:500; font-size:12px; padding:7px 14px 7px 10px; border-radius:30px; margin-bottom:20px;}
