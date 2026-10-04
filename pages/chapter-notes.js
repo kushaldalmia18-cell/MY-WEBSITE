@@ -98,12 +98,12 @@ export default function ChapterNotes() {
         h1,h2,h3{font-family:var(--ag-font-display); font-style:italic; font-weight:500; text-wrap:balance; margin:0; color:var(--ag-ink) !important;}
         p{line-height:1.55; color:var(--ag-muted); margin:0;}
 
-        .ag-topbar{display:flex; align-items:center; justify-content:space-between; padding-block:18px; max-width:1080px; margin:0 auto;}
+        .ag-topbar{display:flex; align-items:center; justify-content:space-between; padding-block:18px;}
         .ag-logo{font-family:var(--ag-font-display); font-weight:700; font-size:21px; text-decoration:none; color:var(--ag-ink);}
         .ag-logo span{color:var(--ag-accent);}
         .ag-back-link{font-family:var(--ag-font-mono); font-size:12.5px; font-weight:600; color:var(--ag-accent); text-decoration:none;}
 
-        .ag-notespage{max-width:1080px; margin:0 auto; padding-block:20px 60px;}
+        .ag-notespage{padding-block:20px 60px;}
         .ag-notespage h1{font-size:34px;}
         .ag-notespage > p.ag-sub{margin-top:10px; font-size:15px; max-width:620px;}
 
