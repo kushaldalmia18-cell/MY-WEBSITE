@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import JOBS from '../data/jobs';
 import RADIAL from '../data/radial';
 import INTERVIEW_BANKS from '../data/interviewBanks';
+import { decodeEntitiesFully, stripHtml, extractTag, extractItems, fetchFeedXml } from '../lib/feedUtils';
 
 // Used only if both live feeds fail (or at build time before the first successful
 // fetch) so the News tab is never empty. Kept as real, working links.
@@ -20,10 +21,8 @@ const FALLBACK_NEWS_ITEMS = [
 
 // ---------------------------------------------------------------------------
 // Live news: fetched server-side at build time and re-fetched automatically
-// by Next.js ISR every REVALIDATE_SECONDS (see getStaticProps below). No
-// eval/new Function anywhere — just a small regex-based RSS/XML reader, since
-// Node has no built-in XML parser and adding a dependency would mean also
-// editing package.json on every deploy.
+// by Next.js ISR every REVALIDATE_SECONDS (see getStaticProps below). Parsing
+// helpers live in lib/feedUtils.js, shared with pages/job-listings.js.
 // ---------------------------------------------------------------------------
 const REVALIDATE_SECONDS = 60 * 60 * 24; // refresh roughly once a day
 
@@ -32,47 +31,14 @@ const NEWS_FEEDS = [
   { url: 'https://theactuarymagazine.org/feed/', tag: 'The Actuary' }
 ];
 
-const NAMED_ENTITIES = {
-  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
-  ldquo: '“', rdquo: '”', lsquo: '‘', rsquo: '’',
-  mdash: '—', ndash: '–', hellip: '…'
-};
+const NEWS_USER_AGENT = 'ActuarialGuideBot/1.0 (+https://actuarialguide.com)';
 
-function decodeEntities(str) {
-  return String(str)
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
-    .replace(/&([a-zA-Z]+);/g, (m, name) => (NAMED_ENTITIES[name] !== undefined ? NAMED_ENTITIES[name] : m));
-}
-
-function stripHtml(str) {
-  return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function extractTag(block, tag) {
-  const re = new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)<\\/' + tag + '>', 'i');
-  const m = block.match(re);
-  if (!m) return '';
-  let inner = m[1];
-  const cdataMatch = inner.match(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/);
-  if (cdataMatch) inner = cdataMatch[1];
-  return inner.trim();
-}
-
-function extractItems(xml) {
-  const items = [];
-  const re = /<item\b[^>]*>([\s\S]*?)<\/item>/gi;
-  let m;
-  while ((m = re.exec(xml))) items.push(m[1]);
-  return items;
-}
-
-function parseItemBlock(block, sourceTag) {
-  const title = decodeEntities(extractTag(block, 'title'));
+function parseNewsItemBlock(block, sourceTag) {
+  const title = decodeEntitiesFully(extractTag(block, 'title'));
   const link = extractTag(block, 'link');
   const pubDateRaw = extractTag(block, 'pubDate');
   const descRaw = extractTag(block, 'description');
-  let body = decodeEntities(stripHtml(descRaw));
+  let body = decodeEntitiesFully(stripHtml(decodeEntitiesFully(descRaw)));
   if (body.length > 170) body = body.slice(0, 167).replace(/\s+\S*$/, '') + '…';
   const date = pubDateRaw ? new Date(pubDateRaw) : null;
   return {
@@ -84,29 +50,17 @@ function parseItemBlock(block, sourceTag) {
   };
 }
 
-async function fetchFeed(feed) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(feed.url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'ActuarialGuideBot/1.0 (+https://actuarialguide.com)' }
-    });
-    clearTimeout(timeout);
-    if (!res.ok) return [];
-    const xml = await res.text();
-    return extractItems(xml)
-      .slice(0, 6)
-      .map((block) => parseItemBlock(block, feed.tag))
-      .filter((item) => item.title && item.href);
-  } catch (e) {
-    clearTimeout(timeout);
-    return [];
-  }
+async function fetchNewsFeed(feed) {
+  const xml = await fetchFeedXml(feed.url, { userAgent: NEWS_USER_AGENT });
+  if (!xml) return [];
+  return extractItems(xml)
+    .slice(0, 6)
+    .map((block) => parseNewsItemBlock(block, feed.tag))
+    .filter((item) => item.title && item.href);
 }
 
 async function getLiveNewsItems() {
-  const results = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
+  const results = await Promise.allSettled(NEWS_FEEDS.map(fetchNewsFeed));
   let items = [];
   for (const r of results) {
     if (r.status === 'fulfilled') items = items.concat(r.value);
@@ -246,6 +200,10 @@ export default function Home({ newsItems }) {
     }
     if (dest === 'Coding Practice') {
       router.push('/coding-practice');
+      return;
+    }
+    if (dest === 'Job Listings') {
+      router.push('/job-listings');
       return;
     }
     showToast('→ Would open: ' + dest);
