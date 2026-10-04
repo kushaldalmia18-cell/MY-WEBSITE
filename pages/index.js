@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import JOBS from '../data/jobs';
 import RADIAL from '../data/radial';
 import INTERVIEW_BANKS from '../data/interviewBanks';
@@ -48,6 +49,7 @@ const TABS = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('actuary');
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -109,7 +111,7 @@ export default function Home() {
 
   function handleProvideClick(dest) {
     if (dest === 'Interview Prep') {
-      setInterviewOpen(true);
+      router.push('/interview-prep');
       return;
     }
     showToast('→ Would open: ' + dest);
@@ -128,7 +130,7 @@ export default function Home() {
       </Head>
 
       <div className="topbar">
-        <div className="logo">Actuarial<span>Guide</span></div>
+        <div className="ag-logo">Actuarial<span>Guide</span></div>
         <div className="menu-wrap">
           <button className="burger" aria-label="menu" onClick={() => setMenuOpen((o) => !o)}>
             <span></span><span></span><span></span>
@@ -137,17 +139,6 @@ export default function Home() {
             <>
               <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>
               <div className="menu-panel">
-                <div className="menu-section-title">Browse</div>
-                {TABS.map((tab) => (
-                  <button
-                    key={tab.key}
-                    className="menu-item"
-                    onClick={() => { setActiveTab(tab.key); setMenuOpen(false); }}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-                <div className="menu-divider"></div>
                 <div className="menu-section-title">What we offer</div>
                 {PROVIDE_CARDS.map((card) => (
                   <button
@@ -171,7 +162,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="hero">
+      <div className="ag-hero">
         <h1>Welcome to <span>Actuarial Guide.</span></h1>
         <p>Most people never get this far. You&apos;ve already started, so let&apos;s get you exam ready.</p>
         <button className="path-link" onClick={() => setPathOpen(true)}>New here? See the actuarial path →</button>
@@ -249,19 +240,19 @@ export default function Home() {
         ))}
       </div>
 
-      <section className={'block panel' + (activeTab === 'actuary' ? ' active' : '')}>
+      <section className={'ag-block ag-panel' + (activeTab === 'actuary' ? ' active' : '')}>
         <h2>What does an actuary do?</h2>
-        <p className="sub">An actuary applies maths, statistics and financial theory to measure and manage the financial risk of uncertain future events, mainly in insurance and pensions. The four things below cover most of what the job actually involves.</p>
+        <p className="ag-sub">An actuary applies maths, statistics and financial theory to measure and manage the financial risk of uncertain future events, mainly in insurance and pensions. The four things below cover most of what the job actually involves.</p>
         <div className="explain-grid">
           <div className="explain-item"><div className="explain-num">1</div><div><h3>Risk modelling</h3><p>Estimates the probability and cost of uncertain future events (death, illness, accidents, natural catastrophes) using statistical models built on real historical data.</p></div></div>
           <div className="explain-item"><div className="explain-num">2</div><div><h3>Pricing</h3><p>Sets insurance premiums and pension contribution rates. Price it too low and the provider can&apos;t pay claims; too high and it loses customers, so the number has to reflect the true underlying risk.</p></div></div>
           <div className="explain-item"><div className="explain-num">3</div><div><h3>Reserving and capital</h3><p>Calculates reserves, the money an insurer or pension scheme must hold today to pay claims or benefits owed years or decades from now, and confirms this meets the capital and solvency rules set by regulators.</p></div></div>
           <div className="explain-item"><div className="explain-num">4</div><div><h3>Communication</h3><p>Translates the modelling into advice a board, client or regulator can act on. Exams test the maths; the job itself is as much about explaining it clearly as calculating it.</p></div></div>
         </div>
-        <p className="sub" style={{ marginTop: 28, fontSize: 13.5 }}>Like a chartered accountant, a qualified actuary holds a protected professional title and is bound by the IFoA&apos;s professional standards and code of conduct.</p>
+        <p className="ag-sub" style={{ marginTop: 28, fontSize: 13.5 }}>Like a chartered accountant, a qualified actuary holds a protected professional title and is bound by the IFoA&apos;s professional standards and code of conduct.</p>
       </section>
 
-      <section className={'block panel' + (activeTab === 'where' ? ' active' : '')}>
+      <section className={'ag-block ag-panel' + (activeTab === 'where' ? ' active' : '')}>
         <h2>Industries and employers</h2>
         <div className="job-grid">
           {JOB_CARDS.map((card) => (
@@ -343,9 +334,9 @@ export default function Home() {
         </div>
       </div>
 
-      <section className={'block panel' + (activeTab === 'offer' ? ' active' : '')}>
+      <section className={'ag-block ag-panel' + (activeTab === 'offer' ? ' active' : '')}>
         <h2>What Actuarial Guide gives you</h2>
-        <p className="sub">Everything built around one goal: passing your next exam</p>
+        <p className="ag-sub">Everything built around one goal: passing your next exam</p>
         <div className="provide-grid">
           {PROVIDE_CARDS.map((card) => (
             <div className="provide-card" key={card.dest} onClick={() => handleProvideClick(card.dest)}>
@@ -358,9 +349,9 @@ export default function Home() {
         <div className={'toast' + (toast ? ' show' : '')}>{toast}</div>
       </section>
 
-      <section className={'block panel' + (activeTab === 'news' ? ' active' : '')}>
+      <section className={'ag-block ag-panel' + (activeTab === 'news' ? ' active' : '')}>
         <h2>Actuarial news &amp; exam updates</h2>
-        <p className="sub">What&apos;s happening in the profession right now</p>
+        <p className="ag-sub">What&apos;s happening in the profession right now</p>
         <div className="news-grid">
           {NEWS_ITEMS.map((item) => (
             <a className="news-card" href={item.href} target="_blank" rel="noopener noreferrer" key={item.href}>
@@ -395,8 +386,6 @@ export default function Home() {
         }
         h1,h2,h3{font-family:var(--ag-font-display); font-style:italic; font-weight:500; text-wrap:balance; margin:0; color:var(--ag-ink) !important;}
         p{line-height:1.55; color:var(--ag-muted); margin:0;}
-        .wrap{max-width:1080px; margin:0 auto;}
-        .mono{font-family:var(--ag-font-mono); font-style:normal;}
 
         .topbar{display:flex; align-items:center; justify-content:space-between; padding-block:18px; max-width:1080px; margin:0 auto;}
         .logo{font-family:var(--ag-font-display); font-weight:700; font-size:21px;}
@@ -411,25 +400,23 @@ export default function Home() {
         .menu-item:hover{background:var(--ag-bg);}
         .menu-divider{height:1px; background:var(--ag-line); margin:6px 4px;}
 
-        .hero{max-width:1080px; margin:0 auto; padding-block:28px 48px; text-align:center;}
-        .eyebrow{display:inline-flex; align-items:center; gap:7px; background:var(--ag-ink); color:#fff; font-family:var(--ag-font-mono); font-weight:500; font-size:12px; padding:7px 14px 7px 10px; border-radius:30px; margin-bottom:20px;}
-        .eyebrow::before{content:"✓"; color:var(--ag-accent); font-weight:700;}
-        .hero h1{font-size:clamp(34px,5vw,48px); font-weight:500;}
-        .hero h1 span{color:var(--ag-accent); text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:8px; text-decoration-color:var(--ag-accent);}
-        .hero p{max-width:480px; margin:16px auto 24px; font-size:16px; font-style:normal;}
+        .ag-hero{max-width:1080px; margin:0 auto; padding-block:28px 48px; text-align:center;}
+        .ag-hero h1{font-size:clamp(34px,5vw,48px); font-weight:500;}
+        .ag-hero h1 span{color:var(--ag-accent); text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:8px; text-decoration-color:var(--ag-accent);}
+        .ag-hero p{max-width:480px; margin:16px auto 24px; font-size:16px; font-style:normal;}
         .path-link{background:transparent; color:var(--ag-ink); border:1.3px solid var(--ag-ink); font-family:var(--ag-font-mono); font-weight:500; font-size:13.5px; padding:10px 18px; border-radius:30px; cursor:pointer;}
 
         .tabbar{max-width:560px; margin:0 auto; display:flex; gap:6px; background:transparent; border:none; border-radius:14px; padding:5px; overflow-x:auto;}
         .tabbtn{flex:1; white-space:nowrap; border:1.5px solid var(--ag-accent); background:transparent; color:var(--ag-muted); font-family:var(--ag-font-body); font-weight:600; font-size:13px; padding:10px 10px; border-radius:10px; cursor:pointer;}
         .tabbtn.active{background:var(--ag-accent); color:#fff;}
 
-        section.block{max-width:1080px; margin:0 auto; padding-block:36px 44px;}
-        section.block.panel{border:3px solid var(--ag-accent); border-radius:18px; background:var(--ag-surface); padding:36px 28px 44px; margin-top:22px;}
-        section.block h2{font-size:28px; font-weight:500; text-align:center; position:relative; display:inline-block; left:50%; transform:translateX(-50%);}
-        section.block h2::after{content:""; display:block; width:46px; height:2px; background:var(--ag-accent); margin:14px auto 0;}
-        section.block > p.sub{text-align:center; margin:18px auto 0; max-width:520px; font-size:15px;}
-        .panel{display:none;}
-        .panel.active{display:block; animation:fade .25s ease;}
+        section.ag-block{max-width:1080px; margin:0 auto; padding-block:36px 44px;}
+        section.ag-block.ag-panel{border:3px solid var(--ag-accent); border-radius:18px; background:var(--ag-surface); padding:36px 28px 44px; margin-top:22px;}
+        section.ag-block h2{font-size:28px; font-weight:500; text-align:center; position:relative; display:inline-block; left:50%; transform:translateX(-50%);}
+        section.ag-block h2::after{content:""; display:block; width:46px; height:2px; background:var(--ag-accent); margin:14px auto 0;}
+        section.ag-block > p.ag-sub{text-align:center; margin:18px auto 0; max-width:520px; font-size:15px;}
+        .ag-panel{display:none;}
+        .ag-panel.active{display:block; animation:fade .25s ease;}
         @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
 
         .explain-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px; margin-top:34px;}
@@ -477,12 +464,6 @@ export default function Home() {
         .path-modal-box{max-width:720px;}
         .path-modal-box h3{font-size:22px; margin-bottom:6px;}
         .path-modal-sub{font-size:13.5px; margin-bottom:22px;}
-        .path-steps{display:flex; flex-direction:column; gap:18px;}
-        .path-step{display:flex; gap:14px;}
-        .path-step-dot{width:9px; height:9px; margin-top:6px; flex:none; border-radius:50%; background:var(--ag-accent);}
-        .path-step h4{font-size:14.5px; font-weight:600; font-family:var(--ag-font-body); font-style:normal; margin-bottom:4px;}
-        .path-step p{font-size:13px;}
-        .path-divider{height:1px; background:var(--ag-line); margin:30px 0 24px;}
 
         .radial-hint{font-size:11.5px; color:var(--ag-muted); text-align:center; margin-bottom:16px;}
         .radial-scroll{overflow-x:auto; padding:6px 2px 4px;}
@@ -557,7 +538,7 @@ export default function Home() {
         .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
         @media (max-width:640px){
-          section.block{padding-block:24px 34px;}
+          section.ag-block{padding-block:24px 34px;}
         }
       `}</style>
     </>
