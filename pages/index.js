@@ -5,16 +5,137 @@ import JOBS from '../data/jobs';
 import RADIAL from '../data/radial';
 import INTERVIEW_BANKS from '../data/interviewBanks';
 
-const NEWS_ITEMS = [
-  { tag: 'IFoA', href: 'https://insurancebusinessmag.com/uk/news/breaking-news/institute-and-faculty-of-actuaries-picks-paul-lewis-as-ceo-510261.aspx', title: 'IFoA names Paul Lewis as its new CEO', body: "The Institute and Faculty of Actuaries has appointed Paul Lewis to lead the profession's governing body." },
-  { tag: 'Exams', href: 'https://pwcplus.de/en/article/250315/ifoa-launches-eighth-edition-of-formulae-and-tables-book-ahead-of-2026-exams/', title: '8th edition of Formulae and Tables released', body: 'IFoA has published the updated Formulae and Tables book ahead of the 2026 exam sessions. Check which edition your exam permits before sitting.' },
-  { tag: 'Events', href: 'https://actuaries.org.uk/learn/events/events-calendar', title: 'IFoA events calendar is open for upcoming sessions', body: "Webinars, CPD events and conferences are listed on the IFoA's own calendar, useful for networking before you qualify." },
-  { tag: 'IFoA', href: 'https://www.actuaries.org.uk/', title: 'Council election and President-elect updates', body: 'The IFoA periodically runs Council elections and announces its incoming President-elect. Check the IFoA site for the current cycle.' },
-  { tag: 'Exams', href: 'https://actuaries.org.uk/exam-news/april-2026-exam-booking-dates/', title: 'April 2026 exam booking dates published', body: 'IFoA has confirmed booking windows for the April 2026 session. Check your exact paper’s deadline before it closes.' },
-  { tag: 'Syllabus', href: 'https://actuaries.org.uk/media/444hp2jy/2026-syllabus-changes.pdf', title: '2026 syllabus changes released', body: 'IFoA has published a document covering syllabus changes for 2026. Worth a read before you plan your revision.' },
-  { tag: 'Students', href: 'https://actuaries.org.uk/qualify/student-and-associate-exam-news/', title: 'Student and Associate exam news hub', body: "IFoA's own running feed of newsletters and updates aimed directly at students sitting exams." },
-  { tag: 'Strategy', href: 'https://www.actuarialpost.co.uk/article/ifoa-to-release-updated-strategy-9656.htm', title: 'IFoA to release updated 2026-2029 strategy', body: "The Institute and Faculty of Actuaries is rolling out a new multi-year strategy document shaping the profession's direction." }
+// Used only if both live feeds fail (or at build time before the first successful
+// fetch) so the News tab is never empty. Kept as real, working links.
+const FALLBACK_NEWS_ITEMS = [
+  { tag: 'IFoA', href: 'https://insurancebusinessmag.com/uk/news/breaking-news/institute-and-faculty-of-actuaries-picks-paul-lewis-as-ceo-510261.aspx', title: 'IFoA names Paul Lewis as its new CEO', body: "The Institute and Faculty of Actuaries has appointed Paul Lewis to lead the profession's governing body.", date: null },
+  { tag: 'Exams', href: 'https://pwcplus.de/en/article/250315/ifoa-launches-eighth-edition-of-formulae-and-tables-book-ahead-of-2026-exams/', title: '8th edition of Formulae and Tables released', body: 'IFoA has published the updated Formulae and Tables book ahead of the 2026 exam sessions. Check which edition your exam permits before sitting.', date: null },
+  { tag: 'Events', href: 'https://actuaries.org.uk/learn/events/events-calendar', title: 'IFoA events calendar is open for upcoming sessions', body: "Webinars, CPD events and conferences are listed on the IFoA's own calendar, useful for networking before you qualify.", date: null },
+  { tag: 'IFoA', href: 'https://www.actuaries.org.uk/', title: 'Council election and President-elect updates', body: 'The IFoA periodically runs Council elections and announces its incoming President-elect. Check the IFoA site for the current cycle.', date: null },
+  { tag: 'Exams', href: 'https://actuaries.org.uk/exam-news/april-2026-exam-booking-dates/', title: 'April 2026 exam booking dates published', body: 'IFoA has confirmed booking windows for the April 2026 session. Check your exact paper’s deadline before it closes.', date: null },
+  { tag: 'Syllabus', href: 'https://actuaries.org.uk/media/444hp2jy/2026-syllabus-changes.pdf', title: '2026 syllabus changes released', body: 'IFoA has published a document covering syllabus changes for 2026. Worth a read before you plan your revision.', date: null },
+  { tag: 'Students', href: 'https://actuaries.org.uk/qualify/student-and-associate-exam-news/', title: 'Student and Associate exam news hub', body: "IFoA's own running feed of newsletters and updates aimed directly at students sitting exams.", date: null },
+  { tag: 'Strategy', href: 'https://www.actuarialpost.co.uk/article/ifoa-to-release-updated-strategy-9656.htm', title: 'IFoA to release updated 2026-2029 strategy', body: "The Institute and Faculty of Actuaries is rolling out a new multi-year strategy document shaping the profession's direction.", date: null }
 ];
+
+// ---------------------------------------------------------------------------
+// Live news: fetched server-side at build time and re-fetched automatically
+// by Next.js ISR every REVALIDATE_SECONDS (see getStaticProps below). No
+// eval/new Function anywhere — just a small regex-based RSS/XML reader, since
+// Node has no built-in XML parser and adding a dependency would mean also
+// editing package.json on every deploy.
+// ---------------------------------------------------------------------------
+const REVALIDATE_SECONDS = 60 * 60 * 24; // refresh roughly once a day
+
+const NEWS_FEEDS = [
+  { url: 'https://www.actuarialpost.co.uk/rss_news/actuarialpost.xml', tag: 'Actuarial Post' },
+  { url: 'https://theactuarymagazine.org/feed/', tag: 'The Actuary' }
+];
+
+const NAMED_ENTITIES = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  ldquo: '“', rdquo: '”', lsquo: '‘', rsquo: '’',
+  mdash: '—', ndash: '–', hellip: '…'
+};
+
+function decodeEntities(str) {
+  return String(str)
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&([a-zA-Z]+);/g, (m, name) => (NAMED_ENTITIES[name] !== undefined ? NAMED_ENTITIES[name] : m));
+}
+
+function stripHtml(str) {
+  return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function extractTag(block, tag) {
+  const re = new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)<\\/' + tag + '>', 'i');
+  const m = block.match(re);
+  if (!m) return '';
+  let inner = m[1];
+  const cdataMatch = inner.match(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/);
+  if (cdataMatch) inner = cdataMatch[1];
+  return inner.trim();
+}
+
+function extractItems(xml) {
+  const items = [];
+  const re = /<item\b[^>]*>([\s\S]*?)<\/item>/gi;
+  let m;
+  while ((m = re.exec(xml))) items.push(m[1]);
+  return items;
+}
+
+function parseItemBlock(block, sourceTag) {
+  const title = decodeEntities(extractTag(block, 'title'));
+  const link = extractTag(block, 'link');
+  const pubDateRaw = extractTag(block, 'pubDate');
+  const descRaw = extractTag(block, 'description');
+  let body = decodeEntities(stripHtml(descRaw));
+  if (body.length > 170) body = body.slice(0, 167).replace(/\s+\S*$/, '') + '…';
+  const date = pubDateRaw ? new Date(pubDateRaw) : null;
+  return {
+    tag: sourceTag,
+    href: link,
+    title,
+    body,
+    date: date && !isNaN(date.getTime()) ? date.toISOString() : null
+  };
+}
+
+async function fetchFeed(feed) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(feed.url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'ActuarialGuideBot/1.0 (+https://actuarialguide.com)' }
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return [];
+    const xml = await res.text();
+    return extractItems(xml)
+      .slice(0, 6)
+      .map((block) => parseItemBlock(block, feed.tag))
+      .filter((item) => item.title && item.href);
+  } catch (e) {
+    clearTimeout(timeout);
+    return [];
+  }
+}
+
+async function getLiveNewsItems() {
+  const results = await Promise.allSettled(NEWS_FEEDS.map(fetchFeed));
+  let items = [];
+  for (const r of results) {
+    if (r.status === 'fulfilled') items = items.concat(r.value);
+  }
+  items.sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0));
+  const seen = new Set();
+  items = items.filter((item) => {
+    if (seen.has(item.href)) return false;
+    seen.add(item.href);
+    return true;
+  });
+  return items.slice(0, 8);
+}
+
+export async function getStaticProps() {
+  let newsItems = [];
+  try {
+    newsItems = await getLiveNewsItems();
+  } catch (e) {
+    newsItems = [];
+  }
+  if (!newsItems || newsItems.length < 3) {
+    newsItems = FALLBACK_NEWS_ITEMS;
+  }
+  return {
+    props: { newsItems },
+    revalidate: REVALIDATE_SECONDS
+  };
+}
 
 const JOB_CARDS = [
   { key: 'gi', icon: '🛡️', name: 'General Insurance', desc: 'Pricing & reserving' },
@@ -48,8 +169,9 @@ const TABS = [
   { key: 'news', label: 'News' }
 ];
 
-export default function Home() {
+export default function Home({ newsItems }) {
   const router = useRouter();
+  const newsToShow = newsItems && newsItems.length > 0 ? newsItems : FALLBACK_NEWS_ITEMS;
   const [activeTab, setActiveTab] = useState('actuary');
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -365,15 +487,20 @@ export default function Home() {
         <h2>Actuarial news &amp; exam updates</h2>
         <p className="ag-sub">What&apos;s happening in the profession right now</p>
         <div className="news-grid">
-          {NEWS_ITEMS.map((item) => (
+          {newsToShow.map((item) => (
             <a className="news-card" href={item.href} target="_blank" rel="noopener noreferrer" key={item.href}>
               <div className="news-tag">{item.tag}</div>
+              {item.date && (
+                <span className="news-date">
+                  {new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              )}
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </a>
           ))}
         </div>
-        <p className="news-note">Links go to real, current sources. On the live site this section pulls automatically, no manual editing needed once it&apos;s wired up.</p>
+        <p className="news-note">Pulled automatically from actuarial and insurance industry news sources and refreshed roughly once a day — no manual editing needed.</p>
       </section>
 
       <footer>
