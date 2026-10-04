@@ -114,7 +114,7 @@ export default function InterviewPrep() {
         .ag-logo span{color:var(--ag-accent);}
         .ag-back-link{font-family:var(--ag-font-mono); font-size:12.5px; font-weight:600; color:var(--ag-accent); text-decoration:none;}
 
-        .ag-ivpage{max-width:780px; margin:0 auto; padding-block:20px 60px;}
+        .ag-ivpage{max-width:1080px; margin:0 auto; padding-block:20px 60px;}
         .ag-ivpage h1{font-size:34px;}
         .ag-ivpage > p.ag-sub{margin-top:10px; font-size:15px;}
 
